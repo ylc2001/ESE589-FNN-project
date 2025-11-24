@@ -10,6 +10,7 @@ and visualization of predictions.
 import time
 import tracemalloc
 import numpy as np
+import matplotlib.pyplot as plt
 import network
 import mnist_loader
 
@@ -92,6 +93,7 @@ def visualize_predictions(num_samples=5, net=None, test_data=None):
     Visualize network predictions on random test samples.
     
     Uses the same model from large_benchmark if no model is provided.
+    Displays the selected samples as images in a single figure.
     
     Args:
         num_samples (int): Number of samples to display (default: 5).
@@ -122,8 +124,17 @@ def visualize_predictions(num_samples=5, net=None, test_data=None):
     print(f"\nShowing predictions for {num_samples} random test samples:")
     print("-" * 40)
     
+    if num_samples <= 0:
+        print("No samples to display.")
+        return 0, 0
+    
     # Random sample indices
     indices = np.random.choice(len(test_data), num_samples, replace=False)
+    
+    # Create a figure with subplots for each sample
+    fig, axes = plt.subplots(1, num_samples, figsize=(2 * num_samples, 3))
+    if num_samples == 1:
+        axes = [axes]  # Ensure axes is iterable when there's only one sample
     
     correct = 0
     for i, idx in enumerate(indices):
@@ -134,9 +145,26 @@ def visualize_predictions(num_samples=5, net=None, test_data=None):
         
         status = "✓" if is_correct else "✗"
         print(f"Image {i+1} (Sample #{idx}): Predicted={prediction}, Actual={y} {status}")
+        
+        # Reshape the flattened image (784,1) to 28x28 for display
+        image = x.reshape(28, 28)
+        
+        # Display the image
+        axes[i].imshow(image, cmap='gray')
+        axes[i].axis('off')
+        
+        # Set title with prediction and actual label
+        title_color = 'green' if is_correct else 'red'
+        axes[i].set_title(f"Pred: {prediction}\nActual: {y}", color=title_color, fontsize=10)
     
     print("-" * 40)
     print(f"Correct: {correct}/{num_samples}")
+    
+    plt.suptitle("MNIST Predictions", fontsize=14, fontweight='bold')
+    plt.tight_layout()
+    plt.savefig('predictions.png', dpi=150, bbox_inches='tight')
+    print(f"\nImage saved to 'predictions.png'")
+    plt.show()
     
     return correct, num_samples
 

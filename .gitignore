@@ -191,6 +191,9 @@ cython_debug/
 # MNIST data directory
 data/
 
+# Generated prediction images
+predictions.png
+
 # Ruff stuff:
 .ruff_cache/
 
