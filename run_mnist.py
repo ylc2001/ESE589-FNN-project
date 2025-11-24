@@ -154,9 +154,11 @@ if __name__ == "__main__":
             large_benchmark()
         elif mode == "visualize":
             # Run large_benchmark first to train the model, then visualize
+            # The model will be stored globally, so visualize_predictions won't retrain
             large_benchmark()
             visualize_predictions()
         elif mode == "all":
+            # large_benchmark stores the model, visualize_predictions reuses it
             large_benchmark()
             visualize_predictions()
         else:

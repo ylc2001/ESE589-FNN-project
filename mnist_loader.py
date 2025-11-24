@@ -110,7 +110,6 @@ def _download_mnist(data_dir):
         data_dir (str): Directory to save the downloaded files.
     """
     import zipfile
-    import tempfile
     
     # UCI ML Repository URL for MNIST dataset
     # https://archive.ics.uci.edu/dataset/683/mnist+database+of+handwritten+digits
