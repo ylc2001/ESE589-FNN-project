@@ -3,8 +3,8 @@ mnist_loader.py
 ~~~~~~~~~~~~~~~
 
 A library to load the MNIST image data.
-Downloads from UCI ML Repository or uses local cache.
-Can also generate synthetic data for testing when MNIST is unavailable.
+Downloads from UCI ML Repository (https://archive.ics.uci.edu/dataset/683/mnist+database+of+handwritten+digits)
+or uses local cache. Can also generate synthetic data for testing when MNIST is unavailable.
 """
 
 import gzip
@@ -104,26 +104,33 @@ def vectorized_result(j):
 
 def _download_mnist(data_dir):
     """
-    Download MNIST dataset files from the internet.
+    Download MNIST dataset files from UCI ML Repository.
     
     Args:
         data_dir (str): Directory to save the downloaded files.
     """
-    base_url = "https://yann.lecun.com/exdb/mnist/"
-    files = [
-        "train-images-idx3-ubyte.gz",
-        "train-labels-idx1-ubyte.gz",
-        "t10k-images-idx3-ubyte.gz",
-        "t10k-labels-idx1-ubyte.gz"
-    ]
+    import zipfile
+    import tempfile
     
-    print("Downloading MNIST dataset...")
-    for filename in files:
-        filepath = os.path.join(data_dir, filename)
-        if not os.path.exists(filepath):
-            print(f"  Downloading {filename}...")
-            url = base_url + filename
-            urllib.request.urlretrieve(url, filepath)
+    # UCI ML Repository URL for MNIST dataset
+    # https://archive.ics.uci.edu/dataset/683/mnist+database+of+handwritten+digits
+    uci_url = "https://archive.ics.uci.edu/static/public/683/mnist+database+of+handwritten+digits.zip"
+    
+    print("Downloading MNIST dataset from UCI ML Repository...")
+    print(f"  URL: {uci_url}")
+    
+    # Download the zip file
+    zip_path = os.path.join(data_dir, "mnist_uci.zip")
+    urllib.request.urlretrieve(uci_url, zip_path)
+    
+    # Extract the zip file
+    print("  Extracting files...")
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall(data_dir)
+    
+    # Remove the zip file after extraction
+    os.remove(zip_path)
+    
     print("Download complete.")
 
 
