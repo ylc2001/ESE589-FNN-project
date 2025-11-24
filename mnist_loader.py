@@ -109,7 +109,7 @@ def _download_mnist(data_dir):
     Args:
         data_dir (str): Directory to save the downloaded files.
     """
-    base_url = "http://yann.lecun.com/exdb/mnist/"
+    base_url = "https://yann.lecun.com/exdb/mnist/"
     files = [
         "train-images-idx3-ubyte.gz",
         "train-labels-idx1-ubyte.gz",

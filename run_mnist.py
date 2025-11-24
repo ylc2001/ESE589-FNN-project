@@ -79,9 +79,10 @@ def large_benchmark():
     print("-" * 40)
     
     best_accuracy = max(results)
+    # Find the epoch with best accuracy (0-indexed internally, display as 0-indexed to match output)
     best_epoch = results.index(best_accuracy)
     
-    print(f"\nBest accuracy: {best_accuracy*100:.2f}% (Epoch {best_epoch})")
+    print(f"\nBest accuracy: {best_accuracy*100:.2f}% (at Epoch {best_epoch})")
     print(f"Final accuracy: {results[-1]*100:.2f}%")
     print("\n[Large benchmark completed]")
     

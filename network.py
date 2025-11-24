@@ -224,7 +224,9 @@ def sigmoid(z):
     Returns:
         numpy.ndarray: Sigmoid of input.
     """
-    return 1.0 / (1.0 + np.exp(-z))
+    # Clip to prevent overflow in exp for large negative values
+    z_clipped = np.clip(z, -500, 500)
+    return 1.0 / (1.0 + np.exp(-z_clipped))
 
 
 def sigmoid_prime(z):
