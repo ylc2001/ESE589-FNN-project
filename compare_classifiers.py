@@ -147,7 +147,7 @@ def main():
     for name, acc, t, samples in results:
         print(f"{name:<20} {acc*100:>9.2f}% {t:>10.2f} {samples:>10}")
     
-    print("\nNote: SVM uses a subset of training data for faster training.")
+    print("\nNote: SVM uses 10,000 training samples for faster training.")
 
 
 if __name__ == "__main__":
