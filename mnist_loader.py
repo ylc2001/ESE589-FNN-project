@@ -2,21 +2,17 @@
 mnist_loader.py
 ~~~~~~~~~~~~~~~
 
-A library to load the MNIST image data.
-Downloads from UCI ML Repository (https://archive.ics.uci.edu/dataset/683/mnist+database+of+handwritten+digits)
-or uses local cache.
+A library to load the MNIST image data using PyTorch's torchvision.
 """
 
-import gzip
 import os
-import pickle
-import urllib.request
 import numpy as np
+from torchvision import datasets
 
 
 def load_data():
     """
-    Load the MNIST dataset.
+    Load the MNIST dataset using PyTorch's torchvision.
     
     Downloads the dataset if not present locally.
     
@@ -30,17 +26,22 @@ def load_data():
                array of shape (n, 784) and labels is a numpy array of shape (n,).
     """
     data_dir = os.path.join(os.path.dirname(__file__), 'data')
-    mnist_pkl = os.path.join(data_dir, 'mnist.pkl.gz')
     
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
+    # Download and load MNIST using torchvision
+    train_dataset = datasets.MNIST(root=data_dir, train=True, download=True)
+    test_dataset = datasets.MNIST(root=data_dir, train=False, download=True)
     
-    if not os.path.exists(mnist_pkl):
-        _download_mnist(data_dir)
-        _create_mnist_pkl(data_dir, mnist_pkl)
+    # Convert to numpy arrays and normalize to [0, 1]
+    train_images = train_dataset.data.numpy().reshape(-1, 784).astype(np.float32) / 255.0
+    train_labels = train_dataset.targets.numpy()
     
-    with gzip.open(mnist_pkl, 'rb') as f:
-        training_data, validation_data, test_data = pickle.load(f, encoding='latin1')
+    test_images = test_dataset.data.numpy().reshape(-1, 784).astype(np.float32) / 255.0
+    test_labels = test_dataset.targets.numpy()
+    
+    # Split training into training (50000) and validation (10000)
+    training_data = (train_images[:50000], train_labels[:50000])
+    validation_data = (train_images[50000:], train_labels[50000:])
+    test_data = (test_images, test_labels)
     
     return (training_data, validation_data, test_data)
 
@@ -94,109 +95,3 @@ def vectorized_result(j):
     e = np.zeros((10, 1))
     e[j] = 1.0
     return e
-
-
-def _download_mnist(data_dir):
-    """
-    Download MNIST dataset files from UCI ML Repository.
-    
-    Args:
-        data_dir (str): Directory to save the downloaded files.
-    """
-    import zipfile
-    
-    # UCI ML Repository URL for MNIST dataset
-    # https://archive.ics.uci.edu/dataset/683/mnist+database+of+handwritten+digits
-    uci_url = "https://archive.ics.uci.edu/static/public/683/mnist+database+of+handwritten+digits.zip"
-    
-    print("Downloading MNIST dataset from UCI ML Repository...")
-    print(f"  URL: {uci_url}")
-    
-    # Download the zip file
-    zip_path = os.path.join(data_dir, "mnist_uci.zip")
-    urllib.request.urlretrieve(uci_url, zip_path)
-    
-    # Extract the zip file
-    print("  Extracting files...")
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        zip_ref.extractall(data_dir)
-    
-    # Remove the zip file after extraction
-    os.remove(zip_path)
-    
-    print("Download complete.")
-
-
-def _read_images(filepath):
-    """
-    Read images from an IDX file.
-    
-    Args:
-        filepath (str): Path to the gzipped IDX file.
-    
-    Returns:
-        numpy.ndarray: Array of images, shape (n_images, 784).
-    """
-    with gzip.open(filepath, 'rb') as f:
-        # Read magic number and dimensions
-        magic = int.from_bytes(f.read(4), 'big')
-        n_images = int.from_bytes(f.read(4), 'big')
-        n_rows = int.from_bytes(f.read(4), 'big')
-        n_cols = int.from_bytes(f.read(4), 'big')
-        
-        # Read image data
-        data = np.frombuffer(f.read(), dtype=np.uint8)
-        data = data.reshape(n_images, n_rows * n_cols)
-        
-        # Normalize to [0, 1]
-        return data.astype(np.float32) / 255.0
-
-
-def _read_labels(filepath):
-    """
-    Read labels from an IDX file.
-    
-    Args:
-        filepath (str): Path to the gzipped IDX file.
-    
-    Returns:
-        numpy.ndarray: Array of labels.
-    """
-    with gzip.open(filepath, 'rb') as f:
-        # Read magic number and count
-        magic = int.from_bytes(f.read(4), 'big')
-        n_labels = int.from_bytes(f.read(4), 'big')
-        
-        # Read label data
-        data = np.frombuffer(f.read(), dtype=np.uint8)
-        return data
-
-
-def _create_mnist_pkl(data_dir, pkl_path):
-    """
-    Create a pickled version of the MNIST dataset.
-    
-    Args:
-        data_dir (str): Directory containing the raw MNIST files.
-        pkl_path (str): Path for the output pickle file.
-    """
-    print("Processing MNIST data...")
-    
-    # Read training data
-    train_images = _read_images(os.path.join(data_dir, "train-images-idx3-ubyte.gz"))
-    train_labels = _read_labels(os.path.join(data_dir, "train-labels-idx1-ubyte.gz"))
-    
-    # Read test data
-    test_images = _read_images(os.path.join(data_dir, "t10k-images-idx3-ubyte.gz"))
-    test_labels = _read_labels(os.path.join(data_dir, "t10k-labels-idx1-ubyte.gz"))
-    
-    # Split training into training (50000) and validation (10000)
-    training_data = (train_images[:50000], train_labels[:50000])
-    validation_data = (train_images[50000:], train_labels[50000:])
-    test_data = (test_images, test_labels)
-    
-    # Save as pickle
-    with gzip.open(pkl_path, 'wb') as f:
-        pickle.dump((training_data, validation_data, test_data), f)
-    
-    print("MNIST data processed and saved.")
