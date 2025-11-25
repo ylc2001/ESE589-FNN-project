@@ -5,7 +5,7 @@ run_mnist.py
 Main script to train and evaluate the Feedforward Neural Network on MNIST.
 Provides large benchmark tests with memory and execution time tracking,
 and visualization of predictions.
-with epochs=30, mini_batch_size=10, eta=3.0
+with epochs=30, mini_batch_size=10, lr=3.0
 """
 import os
 import sys
