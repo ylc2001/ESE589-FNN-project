@@ -11,7 +11,7 @@ This project implements a Feedforward Neural Network from scratch using Python a
 - **Feedforward Neural Network** with configurable architecture (supports 3+ hidden layers)
 - **Backpropagation algorithm** for training
 - **Stochastic Gradient Descent (SGD)** with mini-batch support
-- **MNIST dataset loader** with automatic download
+- **MNIST dataset loader** with automatic download via PyTorch/torchvision
 - **Small and large scale examples** for validation and benchmarking
 
 ## Architecture
@@ -36,6 +36,7 @@ For MNIST classification:
 
 - Python 3.7+
 - NumPy
+- PyTorch & torchvision (for dataset download and management)
 
 ### Setup
 
@@ -45,7 +46,7 @@ git clone https://github.com/ylc2001/ESE589-FNN-project.git
 cd ESE589-FNN-project
 
 # Install dependencies
-pip install numpy
+pip install -r requirements.txt
 ```
 
 ## Usage
@@ -177,7 +178,7 @@ Where:
 ## References
 
 - [Neural Networks and Deep Learning](http://neuralnetworksanddeeplearning.com/) by Michael Nielsen
-- [MNIST Database](https://archive.ics.uci.edu/dataset/683/mnist+database+of+handwritten+digits) from UCI ML Repository
+- [MNIST Database](http://yann.lecun.com/exdb/mnist/) (downloaded via torchvision)
 
 ## License
 
