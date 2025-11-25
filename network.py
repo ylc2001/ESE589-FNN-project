@@ -119,32 +119,44 @@ __global__ void scale_subtract(float *w, float *nw, float scale, float *result, 
 """
 
 
+import threading
+
+
 class CUDAKernels:
-    """Wrapper class for CUDA kernels."""
+    """Wrapper class for CUDA kernels (thread-safe singleton)."""
     _instance = None
     _initialized = False
+    _lock = threading.Lock()
     
     def __new__(cls):
         if cls._instance is None:
-            cls._instance = super().__new__(cls)
+            with cls._lock:
+                # Double-check locking pattern
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
         return cls._instance
     
     def __init__(self):
         if not CUDAKernels._initialized and _PYCUDA_AVAILABLE:
-            try:
-                self.mod = SourceModule(_CUDA_KERNEL_CODE)
-                self.sigmoid_kernel = self.mod.get_function("sigmoid_kernel")
-                self.sigmoid_prime_kernel = self.mod.get_function("sigmoid_prime_kernel")
-                self.matrix_vector_mult = self.mod.get_function("matrix_vector_mult")
-                self.matrix_vector_mult_transpose = self.mod.get_function("matrix_vector_mult_transpose")
-                self.outer_product = self.mod.get_function("outer_product")
-                self.elementwise_multiply = self.mod.get_function("elementwise_multiply")
-                self.elementwise_subtract = self.mod.get_function("elementwise_subtract")
-                self.elementwise_add = self.mod.get_function("elementwise_add")
-                self.scale_subtract = self.mod.get_function("scale_subtract")
-                CUDAKernels._initialized = True
-            except Exception:
-                CUDAKernels._initialized = False
+            with CUDAKernels._lock:
+                # Double-check to avoid race condition
+                if CUDAKernels._initialized:
+                    return
+                try:
+                    self.mod = SourceModule(_CUDA_KERNEL_CODE)
+                    self.sigmoid_kernel = self.mod.get_function("sigmoid_kernel")
+                    self.sigmoid_prime_kernel = self.mod.get_function("sigmoid_prime_kernel")
+                    self.matrix_vector_mult = self.mod.get_function("matrix_vector_mult")
+                    self.matrix_vector_mult_transpose = self.mod.get_function("matrix_vector_mult_transpose")
+                    self.outer_product = self.mod.get_function("outer_product")
+                    self.elementwise_multiply = self.mod.get_function("elementwise_multiply")
+                    self.elementwise_subtract = self.mod.get_function("elementwise_subtract")
+                    self.elementwise_add = self.mod.get_function("elementwise_add")
+                    self.scale_subtract = self.mod.get_function("scale_subtract")
+                    CUDAKernels._initialized = True
+                except Exception as e:
+                    print(f"Warning: CUDA kernel compilation failed: {e}")
+                    CUDAKernels._initialized = False
 
 
 class Network(object):
@@ -179,14 +191,6 @@ class Network(object):
                 except Exception as e:
                     print(f"Warning: GPU initialization failed: {e}. Falling back to CPU.")
                     self.device = 'cpu'
-
-    def _to_gpu(self, arr):
-        """Transfer numpy array to GPU."""
-        return gpuarray.to_gpu(arr.astype(np.float32).flatten())
-    
-    def _from_gpu(self, gpu_arr, shape):
-        """Transfer GPU array back to numpy with given shape."""
-        return gpu_arr.get().reshape(shape)
 
     def feedforward(self, a):
         """

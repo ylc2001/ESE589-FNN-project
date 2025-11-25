@@ -127,8 +127,12 @@ def visualize_predictions(num_samples=5, net=None, test_data=None):
                 if len(saved_data) == 3:
                     sizes, biases, weights = saved_data
                     device = 'cpu'
-                else:
+                elif len(saved_data) == 4:
                     sizes, biases, weights, device = saved_data
+                else:
+                    print(f"Warning: Unexpected model format with {len(saved_data)} items. Using defaults.")
+                    sizes, biases, weights = saved_data[:3]
+                    device = 'cpu'
                 net = network.Network(sizes, device=device)
                 net.biases = biases
                 net.weights = weights
@@ -201,7 +205,7 @@ def parse_args():
         if arg == '--device' and i + 1 < len(args):
             device = args[i + 1].lower()
             if device not in ('cpu', 'gpu'):
-                print(f"Invalid device: {device}. Using 'cpu'.")
+                print(f"Invalid device: {device}. Valid options are: cpu, gpu. Using 'cpu'.")
                 device = 'cpu'
             i += 2
         elif arg in ('large', 'visualize', 'all'):
