@@ -211,3 +211,6 @@ predictions.png
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# others
+trained_model.pkl

@@ -23,7 +23,7 @@ class Network(object):
             a = sigmoid(np.dot(w, a) + b)
         return a
 
-    def SGD(self, training_data, epochs, mini_batch_size, eta,
+    def SGD(self, training_data, epochs, mini_batch_size, lr,
             test_data=None, verbose=True):
         training_data = list(training_data)
         n = len(training_data)
@@ -41,7 +41,7 @@ class Network(object):
                 for k in range(0, n, mini_batch_size)]
             
             for mini_batch in mini_batches:
-                self.update_mini_batch(mini_batch, eta)
+                self.update_mini_batch(mini_batch, lr)
             
             if test_data:
                 correct = self.evaluate(test_data)

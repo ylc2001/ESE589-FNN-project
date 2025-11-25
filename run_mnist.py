@@ -5,6 +5,7 @@ run_mnist.py
 Main script to train and evaluate the Feedforward Neural Network on MNIST.
 Provides large benchmark tests with memory and execution time tracking,
 and visualization of predictions.
+with epochs=30, mini_batch_size=10, eta=3.0
 """
 import os
 import sys
@@ -57,7 +58,7 @@ def large_benchmark():
     print("\nTraining for 30 epochs with mini-batch size 10 and learning rate 3.0...")
     print("-" * 40)
     
-    results = net.SGD(training_data, epochs=30, mini_batch_size=10, eta=3.0,
+    results = net.SGD(training_data, epochs=30, mini_batch_size=10, lr=3.0,
                       test_data=test_data)
     
     print("-" * 40)
@@ -191,4 +192,4 @@ if __name__ == "__main__":
         print("(Use 'python run_mnist.py large' for benchmark only) \n")
         large_benchmark()
         visualize_predictions()
-        
+
