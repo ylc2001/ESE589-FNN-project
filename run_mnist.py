@@ -6,6 +6,10 @@ Main script to train and evaluate the Feedforward Neural Network on MNIST.
 Provides large benchmark tests with memory and execution time tracking,
 and visualization of predictions.
 with epochs=30, mini_batch_size=10, lr=3.0
+
+Supports running on CPU or GPU (via PyCUDA).
+Usage:
+    python run_mnist.py [large|visualize|all] [--device cpu|gpu]
 """
 import os
 import sys
@@ -23,12 +27,15 @@ _trained_model = None
 _test_data = None
 
 
-def large_benchmark():
+def large_benchmark(device='cpu'):
     """
     Large benchmark test on full MNIST dataset.
     
     Trains on all 50,000 training samples and evaluates on 10,000 test samples.
     Shows memory usage and execution time.
+    
+    Args:
+        device: 'cpu' or 'gpu'. Device to run the network on.
     
     Returns:
         tuple: (results, net, test_data) - evaluation results, trained network, and test data
@@ -38,6 +45,9 @@ def large_benchmark():
     print("\n" + "=" * 60)
     print("LARGE BENCHMARK TEST")
     print("=" * 60)
+    print(f"Device: {device.upper()}")
+    if device.lower() == 'gpu':
+        print(f"GPU Available: {network.is_gpu_available()}")
     
     # Start memory tracking
     tracemalloc.start()
@@ -52,10 +62,10 @@ def large_benchmark():
     
     # Create a network with 3 hidden layers
     # Input: 784, Hidden: 128, 64, 32, Output: 10
-    print("\nCreating network with architecture: [784, 128, 64, 32, 10]")
-    net = network.Network([784, 128, 64, 32, 10])
+    print(f"\nCreating network with architecture: [784, 128, 64, 32, 10]")
+    net = network.Network([784, 128, 64, 32, 10], device=device)
     
-    print("\nTraining for 30 epochs with mini-batch size 10 and learning rate 3.0...")
+    print(f"\nTraining for 30 epochs with mini-batch size 10 and learning rate 3.0...")
     print("-" * 40)
     
     results = net.SGD(training_data, epochs=30, mini_batch_size=10, lr=3.0,
@@ -79,6 +89,7 @@ def large_benchmark():
     print("\n" + "-" * 40)
     print("PERFORMANCE METRICS")
     print("-" * 40)
+    print(f"Device used: {net.get_device().upper()}")
     print(f"Execution time: {end_time - start_time:.2f} seconds")
     print(f"Peak memory usage: {peak_mem / (1024 * 1024):.2f} MB")
     print(f"Current memory usage: {current_mem / (1024 * 1024):.2f} MB")
@@ -111,8 +122,18 @@ def visualize_predictions(num_samples=5, net=None, test_data=None):
     if net is None: 
         if os.path.exists('trained_model.pkl'):
             with open('trained_model.pkl', 'rb') as f:
-                sizes, biases, weights = pickle.load(f)
-                net = network.Network(sizes)
+                saved_data = pickle.load(f)
+                # Handle both old format (3 items) and new format (4 items with device)
+                if len(saved_data) == 3:
+                    sizes, biases, weights = saved_data
+                    device = 'cpu'
+                elif len(saved_data) == 4:
+                    sizes, biases, weights, device = saved_data
+                else:
+                    print(f"Warning: Unexpected model format with {len(saved_data)} items. Using defaults.")
+                    sizes, biases, weights = saved_data[:3]
+                    device = 'cpu'
+                net = network.Network(sizes, device=device)
                 net.biases = biases
                 net.weights = weights
         elif _trained_model is None:
@@ -172,24 +193,46 @@ def visualize_predictions(num_samples=5, net=None, test_data=None):
     return correct, num_samples
 
 
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        mode = sys.argv[1].lower()
-        
-        if mode == "large":
-            large_benchmark()
-        elif mode == "visualize":
-            visualize_predictions()
-        elif mode == "all":
-            large_benchmark()
-            visualize_predictions()
+def parse_args():
+    """Parse command line arguments."""
+    mode = None
+    device = 'cpu'
+    
+    args = sys.argv[1:]
+    i = 0
+    while i < len(args):
+        arg = args[i]
+        if arg == '--device' and i + 1 < len(args):
+            device = args[i + 1].lower()
+            if device not in ('cpu', 'gpu'):
+                print(f"Invalid device: {device}. Valid options are: cpu, gpu. Using 'cpu'.")
+                device = 'cpu'
+            i += 2
+        elif arg in ('large', 'visualize', 'all'):
+            mode = arg
+            i += 1
         else:
-            print(f"Unknown mode: {mode}")
-            print("Usage: python run_mnist.py [large|visualize|all]")
-    else:
+            print(f"Unknown argument: {arg}")
+            i += 1
+    
+    return mode, device
+
+
+if __name__ == "__main__":
+    mode, device = parse_args()
+    
+    if mode == "large":
+        large_benchmark(device=device)
+    elif mode == "visualize":
+        visualize_predictions()
+    elif mode == "all":
+        large_benchmark(device=device)
+        visualize_predictions()
+    elif mode is None:
         # Default: run large benchmark and then visualize
         print("\nRunning large benchmark followed by visualization...")
-        print("(Use 'python run_mnist.py large' for benchmark only) \n")
-        large_benchmark()
+        print("(Use 'python run_mnist.py large' for benchmark only)")
+        print("(Use '--device gpu' to run on GPU)\n")
+        large_benchmark(device=device)
         visualize_predictions()
 
