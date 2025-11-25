@@ -49,13 +49,6 @@ def train():
     batch_size = config.batch_size
     learning_rate = config.learning_rate
     
-    # Log hyperparameters
-    wandb.log({
-        'epochs': epochs,
-        'batch_size': batch_size,
-        'learning_rate': learning_rate
-    })
-    
     # Load MNIST data
     training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
     
@@ -73,9 +66,9 @@ def train():
     )
     
     # Log accuracy for each epoch
-    for epoch, accuracy in enumerate(results):
+    for epoch_num, accuracy in enumerate(results, start=1):
         wandb.log({
-            'epoch': epoch,
+            'epoch': epoch_num,
             'accuracy': accuracy
         })
     
@@ -121,7 +114,7 @@ def main():
     
     print("\n" + "=" * 60)
     print("Sweep completed!")
-    print(f"View results at: https://wandb.ai/<your-username>/mnist-fnn-sweep/sweeps/{sweep_id}")
+    print("View results at: https://wandb.ai/your-username/mnist-fnn-sweep")
     print("=" * 60)
 
 
