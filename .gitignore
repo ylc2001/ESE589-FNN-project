@@ -214,3 +214,6 @@ __marimo__/
 
 # others
 trained_model.pkl
+
+# Weights & Biases
+wandb/
