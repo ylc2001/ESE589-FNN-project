@@ -191,3 +191,4 @@ if __name__ == "__main__":
         print("(Use 'python run_mnist.py large' for benchmark only) \n")
         large_benchmark()
         visualize_predictions()
+        
