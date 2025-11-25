@@ -12,18 +12,7 @@ from torchvision import datasets
 
 def load_data():
     """
-    Load the MNIST dataset using PyTorch's torchvision.
-    
-    Downloads the dataset if not present locally.
-    
-    Returns:
-        tuple: A tuple containing (training_data, validation_data, test_data).
-               - training_data: 50,000 images
-               - validation_data: 10,000 images
-               - test_data: 10,000 images
-               
-               Each is a tuple of (images, labels) where images is a numpy
-               array of shape (n, 784) and labels is a numpy array of shape (n,).
+    Load the MNIST dataset using PyTorch's torchvision. Downloaded data is stored at './data'.
     """
     data_dir = os.path.join(os.path.dirname(__file__), 'data')
     
@@ -48,7 +37,7 @@ def load_data():
 
 def load_data_wrapper():
     """
-    Load the MNIST dataset and return it in a format suitable for training.
+    Load the MNIST dataset and return it in a format suitable for training. Downloaded data is stored at './data'.
     
     Returns:
         tuple: A tuple containing (training_data, validation_data, test_data).
@@ -57,10 +46,7 @@ def load_data_wrapper():
                  numpy array (input image) and y is a 10x1 numpy array 
                  (one-hot encoded label).
                
-               - validation_data: list of 10,000 tuples (x, y) where x is a 784x1
-                 numpy array and y is the digit value (0-9).
-               
-               - test_data: list of 10,000 tuples (x, y) where x is a 784x1
+               - validation_data, test_data: list of 10,000 tuples (x, y) where x is a 784x1
                  numpy array and y is the digit value (0-9).
     """
     tr_d, va_d, te_d = load_data()
@@ -84,13 +70,6 @@ def load_data_wrapper():
 def vectorized_result(j):
     """
     Convert a digit (0-9) into a one-hot encoded vector.
-    
-    Args:
-        j (int): A digit from 0 to 9.
-    
-    Returns:
-        numpy.ndarray: A 10x1 numpy array with a 1.0 in the j-th position
-                       and zeros elsewhere.
     """
     e = np.zeros((10, 1))
     e[j] = 1.0

@@ -6,7 +6,9 @@ Main script to train and evaluate the Feedforward Neural Network on MNIST.
 Provides large benchmark tests with memory and execution time tracking,
 and visualization of predictions.
 """
-
+import os
+import sys
+import pickle
 import time
 import tracemalloc
 import numpy as np
@@ -84,6 +86,9 @@ def large_benchmark():
     # Store for visualization
     _trained_model = net
     _test_data = test_data
+
+    # store the trained model into files
+    net.save('trained_model.pkl')
     
     return results, net, test_data
 
@@ -101,17 +106,24 @@ def visualize_predictions(num_samples=5, net=None, test_data=None):
         test_data: Test data (if None, uses data from large_benchmark).
     """
     global _trained_model, _test_data
+    # if there's a model saved in file, load it
+    if net is None: 
+        if os.path.exists('trained_model.pkl'):
+            with open('trained_model.pkl', 'rb') as f:
+                sizes, biases, weights = pickle.load(f)
+                net = network.Network(sizes)
+                net.biases = biases
+                net.weights = weights
+        elif _trained_model is None:
+            print("\nNo trained model available. Running large_benchmark first...")
+            large_benchmark()
+            net = _trained_model
+
+    
     
     print("\n" + "=" * 60)
     print("PREDICTION VISUALIZATION")
     print("=" * 60)
-    
-    # Use provided model or the one from large_benchmark
-    if net is None:
-        if _trained_model is None:
-            print("\nNo trained model available. Running large_benchmark first...")
-            large_benchmark()
-        net = _trained_model
         
     if test_data is None:
         if _test_data is None:
@@ -128,10 +140,7 @@ def visualize_predictions(num_samples=5, net=None, test_data=None):
         print("No samples to display.")
         return 0, 0
     
-    # Random sample indices
     indices = np.random.choice(len(test_data), num_samples, replace=False)
-    
-    # Create a figure with subplots for each sample
     fig, axes = plt.subplots(1, num_samples, figsize=(2 * num_samples, 3))
     if num_samples == 1:
         axes = [axes]  # Ensure axes is iterable when there's only one sample
@@ -145,15 +154,10 @@ def visualize_predictions(num_samples=5, net=None, test_data=None):
         
         status = "✓" if is_correct else "✗"
         print(f"Image {i+1} (Sample #{idx}): Predicted={prediction}, Actual={y} {status}")
-        
-        # Reshape the flattened image (784,1) to 28x28 for display
-        image = x.reshape(28, 28)
-        
         # Display the image
+        image = x.reshape(28, 28)
         axes[i].imshow(image, cmap='gray')
         axes[i].axis('off')
-        
-        # Set title with prediction and actual label
         title_color = 'green' if is_correct else 'red'
         axes[i].set_title(f"Pred: {prediction}\nActual: {y}", color=title_color, fontsize=10)
     
@@ -163,30 +167,19 @@ def visualize_predictions(num_samples=5, net=None, test_data=None):
     plt.suptitle("MNIST Predictions", fontsize=14, fontweight='bold')
     plt.tight_layout()
     plt.savefig('predictions.png', dpi=150, bbox_inches='tight')
-    print(f"\nImage saved to 'predictions.png'")
-    plt.show()
-    
+    print(f"\nImage saved to 'predictions.png'")    
     return correct, num_samples
 
 
 if __name__ == "__main__":
-    import sys
-    
-    print("Feedforward Neural Network - MNIST Classification")
-    print("=" * 60)
-    
     if len(sys.argv) > 1:
         mode = sys.argv[1].lower()
         
         if mode == "large":
             large_benchmark()
         elif mode == "visualize":
-            # Run large_benchmark first to train the model, then visualize
-            # The model will be stored globally, so visualize_predictions won't retrain
-            large_benchmark()
             visualize_predictions()
         elif mode == "all":
-            # large_benchmark stores the model, visualize_predictions reuses it
             large_benchmark()
             visualize_predictions()
         else:
@@ -195,7 +188,6 @@ if __name__ == "__main__":
     else:
         # Default: run large benchmark and then visualize
         print("\nRunning large benchmark followed by visualization...")
-        print("(Use 'python run_mnist.py large' for benchmark only)")
-        print()
+        print("(Use 'python run_mnist.py large' for benchmark only) \n")
         large_benchmark()
         visualize_predictions()

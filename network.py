@@ -106,6 +106,11 @@ class Network(object):
 
     def predict(self, x):
         return np.argmax(self.feedforward(x))
+    
+    def save(self, filename):
+        import pickle
+        with open(filename, 'wb') as f:
+            pickle.dump((self.sizes, self.biases, self.weights), f)
 
 
 def sigmoid(z):
