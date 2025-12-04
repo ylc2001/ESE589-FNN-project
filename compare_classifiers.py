@@ -51,7 +51,7 @@ def train_fnn(X_train, y_train, X_test, y_test, epochs=10):
     net = network.Network([784, 128, 64, 32, 10])
     
     start_time = time.time()
-    net.SGD(training_data, epochs=epochs, mini_batch_size=10, lr=3.0,
+    net.SGD(training_data, epochs=epochs, mini_batch_size=8, lr=2.0,
             test_data=test_data, verbose=False)
     train_time = time.time() - start_time
     
@@ -117,7 +117,7 @@ def main():
     # 1. FNN (our implementation)
     print("\n" + "-" * 40)
     print("Training FNN (our implementation)...")
-    fnn_acc, fnn_time = train_fnn(X_train, y_train, X_test, y_test, epochs=10)
+    fnn_acc, fnn_time = train_fnn(X_train, y_train, X_test, y_test, epochs=30)
     results.append(("FNN (ours)", fnn_acc, fnn_time, len(X_train)))
     print(f"FNN Accuracy: {fnn_acc*100:.2f}%")
     print(f"Training time: {fnn_time:.2f}s")
